@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
+import javax.swing.*;
 import java.util.Date;
 import java.io.*;
 
@@ -73,7 +74,7 @@ public class PDF {
         this.cosDoc = null;
 
         file = new File(filePath);
-       //parser = new PDFParser(new RandomAccessFile(file, "r")); // update for PDFBox V 2.0
+        //parser = new PDFParser(new RandomAccessFile(file, "r")); // update for PDFBox V 2.0
 
         parser.parse();
         cosDoc = parser.getDocument();
@@ -92,6 +93,59 @@ public class PDF {
 
     public PDDocument getPdDoc() {
         return pdDoc;
+    }
+
+    public String getDirectory() {
+        String ruta = "";
+        // componente de dialogo
+        JFileChooser jfc = new JFileChooser();
+        // solo son directorios
+        jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        //mandamos el cuadro, esperamos una respuesta aprobatoria
+        int dialogResult = jfc.showOpenDialog(null);
+        if (dialogResult == JFileChooser.APPROVE_OPTION) {
+            ruta = jfc.getSelectedFile().getAbsolutePath();
+        }
+        return ruta;
+    }
+
+    public void readPDF(String directory, String label) {
+        File directoryFile = new File(directory); // carpeta donde estan los pdf
+        String[] listFiles = directoryFile.list();//extrae los nombres de archivo
+        String slash = System.getProperty("file.separator");
+        if (listFiles.length == 0)
+            JOptionPane.showMessageDialog(null, "No hay archivos en la carpeta especificada");
+
+        else {
+            //creamos un flujo donde se pondran los nombres de los archivos que contienen los elementos
+            PrintWriter pw = null;
+            try {
+                pw = new PrintWriter("destination.txt");
+                //recorro cada uno de los elementos
+                for (String file : listFiles) {
+                    //preguntamos si es un pdf
+                    if (!file.toLowerCase().endsWith(".pdf"))
+                        continue;
+                    //carga el archivo
+                    PDDocument pdf = PDDocument.load(new File
+                            (directory + slash + file));
+                    //extramos su contenido
+                    String content = new PDFTextStripper()
+                            .getText(pdf);
+                    String text = pdfStripper.getText(pdf);
+                    System.out.println(text);
+                    //cerramos el archivo
+                    pdf.close();
+                    //preguntamos si existe lo que se quiere buscar
+                    if (content.contains(label)) {
+                        //escribimos en el archivo de destino
+                        pw.println(file);
+                    }
+                }
+            }catch(Exception e){
+                JOptionPane.showMessageDialog(null, "Hubo un error al abrir el archivo");
+            }
+        }
     }
 }
 

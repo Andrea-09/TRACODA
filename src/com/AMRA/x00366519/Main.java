@@ -67,6 +67,10 @@ public class Main {
                 JOptionPane.showMessageDialog(null, "Opción inválida");
                 break;
         }
+        PDF leerPDF = new PDF();
+        String directory = leerPDF.getDirectory();
+        String label = JOptionPane.showInputDialog(null, "Busca:");
+        leerPDF.readPDF(directory, label);
     }
 
     public static int menu() {
